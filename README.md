@@ -36,7 +36,7 @@ dependencies {
 
 이 프로젝트는 네트워크 통신 기능을 포함하고 있습니다. 따라서 아래와 같이 **AndroidManifest.xml** 파일에 **네트워크 통신 퍼미션**을 추가해주세요.
 
-```
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.devetude.www.retrofitexample">
@@ -59,7 +59,9 @@ dependencies {
 
 프로젝트를 구성하기 전에 관리의 용의성을 고려하여 아래와 같이 **패키지** 및 **클래스**를 구성했습니다. (물론 자신의 상황에 맞게 변경하셔도 무관합니다.)
 
-![](https://github.com/devetude/Retrofit2Example/blob/master/images/1.png?raw=true)
+<p align="center">
+	<img src="https://github.com/devetude/Retrofit2Example/blob/master/images/1.png?raw=true" width="400"/>
+</p>
 
 **core**에는 http api 통신을 위한 핵심 소스코드가 위치합니다. **APIAdapter**와 서버에서 온 **세션 데이터 관리**를 위한 **interceptor**와 **preferences**로 구성되어있습니다.
 
@@ -80,7 +82,7 @@ dependencies {
 
 **APIAdapter 클래스**는 **OkHttpClient**를 이용하여 쿠키 관리를 위한 클라이언트 객체를 생성하고 이것을 **Retrofit** 객체에 적용 및 생성하는 기능을 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.core;
 
 import android.content.Context;
@@ -155,7 +157,7 @@ public class APIAdapter {
 
 **CookieSharedPreferences 클래스**는 **SharedPreferences**를 이용하여 서버에서 오는 **세션 쿠키 값**을 기기 내부에 저장하고 가져오는 기능을 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.core.preferences;
 
 import android.app.Activity;
@@ -233,7 +235,7 @@ public class CookieSharedPreferences {
 
 **ReceivedCookiesInterceptor 클래스**는 서버로 부터 온 response 데이터를 가로채어 **헤더 영역에 있는 쿠키 값**을 가져와 **CookieSharedPreferences 클래스**를 이용하여 **기기 내부에 저장**하는 기능을 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.core.interceptor;
 
 import android.content.Context;
@@ -293,7 +295,7 @@ public class ReceivedCookiesInterceptor implements Interceptor {
 
 **AddCookiesInterceptor 클래스**는 서버로 보내는 데이터를 가로채어 **CookieSharedPreferences 클래스**를 이용하여 기기 내부에 저장되어있는 **쿠키 값**을 서버로 보낼 데이터의 **헤더 영역에 추가**하는 기능을 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.core.interceptor;
 
 import android.content.Context;
@@ -359,7 +361,7 @@ public class AddCookiesInterceptor implements Interceptor {
 
 **APIUrl 클래스**는 api 서버의 다양한 **url**을 선언하는 기능을 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.resource;
 
 /**
@@ -390,7 +392,7 @@ public class APIUrl {
 
 **ResData 클래스**는 api 서버로 부터 오는 **response 데이터의 형식**을 선언하는 기능을 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.response;
 
 /**
@@ -414,7 +416,7 @@ public class ResData {
 
 **SignService 클래스**는 로그인 및 회원가입을 위한 다양한 **api 메소드** 및 **파라메터**를 정의하고 있습니다.
 
-```
+```java
 package net.devetude.www.retrofit2example.api.service;
 
 import android.content.Context;
@@ -482,5 +484,109 @@ public class SignService extends APIAdapter {
 
 ----------
 
-* 실제 api 클래스의 적용
+* api 클래스의 적용
 -------------
+
+위에서 만든 다양한 api 클래스를 **실제로 적용하는 방법**에 대해서 알아보겠습니다.
+
+#### 1. MainActivity.java
+
+로그인 api를 호출하여 로그인 과정을 마친 이후, 단어 api를 호출하여 단어 유형을 가져오는 간단한 세션 베이스를 아래와 같은 코드로 구현할 수 있습니다.
+
+```java
+package net.devetude.www.retrofit2example;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.gson.Gson;
+
+import net.devetude.www.retrofit2example.api.response.ResData;
+import net.devetude.www.retrofit2example.api.service.SignService;
+import net.devetude.www.retrofit2example.api.service.WordService;
+
+import org.json.JSONArray;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // 로그인 api 호출
+        SignService.getRetrofit(getApplicationContext()).in("[이메일]", "[비밀번호]").enqueue(new Callback<ResData>() {
+            @Override
+            public void onResponse(Call<ResData> call, Response<ResData> response) {
+                if(response.body().res) {
+                    Log.d("devetude", "로그인 성공");
+
+                    // 단어 api 호출 (이 부분부터 로그인 세션이 필요)
+                    WordService.getRetrofit(getApplicationContext()).getWordTypeList("-1", "3").enqueue(new Callback<ResData>() {
+                        @Override
+                        public void onResponse(Call<ResData> call, Response<ResData> response) {
+                            if(response.body().res) {
+                                Log.d("devetude", "단어 유형 리스트 가져오기 성공");
+
+                                try {
+                                    JSONArray jsonArray = new JSONArray(new Gson().toJson(response.body().data));
+                                    Log.d("devetude", "첫번째 단어 유형의 idx : " + jsonArray.getJSONObject(0).getString("idx"));
+                                    Log.d("devetude", "첫번쨰 단어 유형의 name : " + jsonArray.getJSONObject(0).getString("name"));
+                                } catch(Exception e) {
+                                    Log.d("devetude", "json 데이터 파싱 실패");
+                                    Log.d("devetude", "메세지 : " + e.getMessage());
+                                }
+                            }
+
+                            else {
+                                Log.d("devetude", "로그인 실패");
+                                Log.d("devetude", "메세지 : " + response.body().msg);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResData> call, Throwable t) {
+                            Log.d("devetude", "서버 통신 실패");
+                            Log.d("devetude", "메세지 : " + t.getMessage());
+                        }
+                    });
+                }
+
+                else {
+                    Log.d("devetude", "로그인 실패");
+                    Log.d("devetude", "메세지 : " + response.body().msg);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResData> call, Throwable t) {
+                Log.d("devetude", "서버 통신 실패");
+                Log.d("devetude", "메세지 : " + t.getMessage());
+            }
+        });
+    }
+}
+```
+
+#### 2. Logcat 결과
+
+Logcat으로 출력한 결과는 아래와 같습니다.
+
+<p align="center">
+	<img src="https://github.com/devetude/Retrofit2Example/blob/master/images/2.png?raw=true" width="700"/>
+</p>
+
+----------
+
+* 문의사항
+-------------
+
+기타 문의사항이 있으실 경우 아래의 **문의 수단**으로 연락해주세요.
+> **문의 수단:**
+> - 메일 : **devetude@naver.com** 또는 **devetude@gmail.com**
+> - github : **https://github.com/devetude/Retrofit2Example/issues**
