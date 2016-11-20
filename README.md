@@ -7,8 +7,7 @@ Retrofit2Example
 ----------
 
 
-* 시작하기 전에...
--------------
+#* 시작하기 전에...
 
 이 프로젝트에서는 아래 같은 **의존성 프로젝트**가 포함되어있습니다. 의존성 프로젝트별 자세한 설명은 해당 프로젝트의 레포지토리에서 직접확인해주세요.
 
@@ -494,32 +493,6 @@ public class SignService extends APIAdapter {
 로그인 api를 호출하여 로그인 과정을 마친 이후, 단어 api를 호출하여 단어 유형을 가져오는 간단한 세션 베이스를 아래와 같은 코드로 구현할 수 있습니다.
 
 ```java
-package net.devetude.www.retrofit2example;
-
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-
-import com.google.gson.Gson;
-
-import net.devetude.www.retrofit2example.api.response.ResData;
-import net.devetude.www.retrofit2example.api.service.SignService;
-import net.devetude.www.retrofit2example.api.service.WordService;
-
-import org.json.JSONArray;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-public class MainActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // 로그인 api 호출
 package net.devetude.www.retrofit2example;
 
 import android.support.v7.app.AppCompatActivity;
