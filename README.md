@@ -520,6 +520,37 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // 로그인 api 호출
+package net.devetude.www.retrofit2example;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.gson.Gson;
+
+import net.devetude.www.retrofit2example.api.response.ResData;
+import net.devetude.www.retrofit2example.api.service.SignService;
+import net.devetude.www.retrofit2example.api.service.WordService;
+
+import org.json.JSONArray;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+/**
+ * MainActivity 클래스
+ *
+ * @author devetude
+ */
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // 로그인 api 호출
         SignService.getRetrofit(getApplicationContext()).in("[이메일]", "[비밀번호]").enqueue(new Callback<ResData>() {
             @Override
             public void onResponse(Call<ResData> call, Response<ResData> response) {
