@@ -16,6 +16,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * MainActivity 클래스
+ *
+ * @author devetude
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override
