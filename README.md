@@ -548,7 +548,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             else {
-                                Log.d("devetude", "단어 유형 가져오기 실패");
+                                Log.d("devetude", "단어 유형 리스트 가져오기 실패");
                                 Log.d("devetude", "메세지 : " + response.body().msg);
                             }
                         }
