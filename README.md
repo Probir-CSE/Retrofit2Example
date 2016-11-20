@@ -18,7 +18,7 @@ Retrofit2Example
 > 2. square/okHttp : https://github.com/square/okhttp
 > 3. google/gson : https://github.com/google/gson
 
-#### Gradle을 이용한 의존성 프로젝트 추가
+#### 1. Gradle을 이용한 의존성 프로젝트 추가
 
 아래와 같이 **build.gradle (Module: app)** 파일을 안드로이드 스튜디오에서 열어 **dependencies** 블록에 의존성 프로젝트를 추가해주세요.
 
@@ -32,7 +32,7 @@ dependencies {
 }
 ```
 
-#### AndroidManifest에 네트워크 통신 퍼미션 추가
+#### 2. AndroidManifest에 네트워크 통신 퍼미션 추가
 
 이 프로젝트는 네트워크 통신 기능을 포함하고 있습니다. 따라서 아래와 같이 **AndroidManifest.xml** 파일에 **네트워크 통신 퍼미션**을 추가해주세요.
 
@@ -55,7 +55,7 @@ dependencies {
 </manifest>
 ```
 
-#### 프로젝트 패키지 및 클래스 생성
+#### 3. 프로젝트 패키지 및 클래스 생성
 
 프로젝트를 구성하기 전에 관리의 용의성을 고려하여 아래와 같이 **패키지** 및 **클래스**를 구성했습니다. (물론 자신의 상황에 맞게 변경하셔도 무관합니다.)
 
@@ -71,12 +71,14 @@ dependencies {
 
 ----------
 
-* 소스코드 분석
+* 코어 소스코드 분석
 -------------
 
 본격적으로 http api 통신을 위한 소스코드를 작성해보고 분석해보겠습니다.
 
-#### APIAdapter.java
+#### 1. APIAdapter.java
+
+**APIAdapter 클래스**는 **OkHttpClient**를 이용하여 쿠키 관리를 위한 클라이언트 객체를 생성하고 이것을 **Retrofit** 객체에 적용 및 생성하는 기능을 정의하고 있습니다.
 
 ```
 package net.devetude.www.retrofit2example.api.core;
@@ -149,4 +151,336 @@ public class APIAdapter {
 }
 ```
 
+#### 2. CookieSharedPreferences.java
+
+**CookieSharedPreferences 클래스**는 **SharedPreferences**를 이용하여 서버에서 오는 **세션 쿠키 값**을 기기 내부에 저장하고 가져오는 기능을 정의하고 있습니다.
+
+```
+package net.devetude.www.retrofit2example.api.core.preferences;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import java.util.HashSet;
+
+/**
+ * CookieSharedPreferences 클래스
+ *
+ * @author devetude
+ */
+public class CookieSharedPreferences {
+    /**
+     * CookieSharedPreferences를 참조하기 위한 key
+     *
+     * 권고) 겹치지 않는 고유한 형태의 string으로 구성할 것
+     */
+    public static final String COOKIE_SHARED_PREFERENCES_KEY = "new.devetude.www.cookie";
+
+    // 싱글톤 모델로 객체 초기화
+    private static CookieSharedPreferences cookieSharedPreferences = null;
+
+    public static CookieSharedPreferences getInstanceOf(Context c){
+        if(cookieSharedPreferences == null){
+            cookieSharedPreferences = new CookieSharedPreferences(c);
+        }
+
+        return cookieSharedPreferences;
+    }
+
+    private SharedPreferences sharedPreferences;
+
+    /**
+     * 생성자
+     *
+     * @param context
+     */
+    public CookieSharedPreferences(Context context) {
+        final String COOKIE_SHARED_PREFERENCE_NAME = context.getPackageName();
+        sharedPreferences = context.getSharedPreferences(COOKIE_SHARED_PREFERENCE_NAME, Activity.MODE_PRIVATE);
+    }
+
+    /**
+     * SharedPreferences에 값을 추가하는 메소드
+     *
+     * @param key
+     * @param hashSet
+     */
+    public void putHashSet(String key, HashSet<String> hashSet){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet(key, hashSet);
+        editor.commit();
+    }
+
+    /**
+     * SharedPreferences에서 값을 가져오는 메소드
+     *
+     * @param key
+     * @param cookie
+     * @return
+     */
+    public HashSet<String> getHashSet(String key, HashSet<String> cookie){
+        try {
+            return (HashSet<String>) sharedPreferences.getStringSet(key, cookie);
+        } catch (Exception e) {
+            return cookie;
+        }
+    }
+}
+```
+
+#### 3. ReceivedCookiesInterceptor.java
+
+**ReceivedCookiesInterceptor 클래스**는 서버로 부터 온 response 데이터를 가로채어 **헤더 영역에 있는 쿠키 값**을 가져와 **CookieSharedPreferences 클래스**를 이용하여 **기기 내부에 저장**하는 기능을 정의하고 있습니다.
+
+```
+package net.devetude.www.retrofit2example.api.core.interceptor;
+
+import android.content.Context;
+
+import net.devetude.www.retrofit2example.api.core.preferences.CookieSharedPreferences;
+
+import java.io.IOException;
+import java.util.HashSet;
+
+import okhttp3.Interceptor;
+import okhttp3.Response;
+
+/**
+ * ReceivedCookiesInterceptor 클래스
+ *
+ * @author devetude
+ */
+public class ReceivedCookiesInterceptor implements Interceptor {
+    // CookieSharedReferences 객체
+    private CookieSharedPreferences cookieSharedPreferences;
+
+    /**
+     * 생성자
+     *
+     * @param context
+     */
+    public ReceivedCookiesInterceptor(Context context){
+        // CookieSharedReferences 객체 초기화
+        cookieSharedPreferences = CookieSharedPreferences.getInstanceOf(context);
+    }
+
+    @Override
+    public Response intercept(Interceptor.Chain chain) throws IOException {
+        // 가져온 chain으로 부터 리스폰스 객체를 생성
+        Response response = chain.proceed(chain.request());
+
+        // 리스폰스의 헤더 영역에 Set-Cookie가 설정되어있는 경우
+        if (!response.headers("Set-Cookie").isEmpty()) {
+            HashSet<String> cookies = new HashSet<>();
+
+            // 쿠키 값을 읽어옴
+            for (String header : response.headers("Set-Cookie")) {
+                cookies.add(header);
+            }
+
+            // 쿠키 값을 CookieSharedPreferences에 저장
+            cookieSharedPreferences.putHashSet(CookieSharedPreferences.COOKIE_SHARED_PREFERENCES_KEY, cookies);
+        }
+
+        // 리스폰스 객체 반환
+        return response;
+    }
+}
+```
+
+#### 3. AddCookiesInterceptor.java
+
+**AddCookiesInterceptor 클래스**는 서버로 보내는 데이터를 가로채어 **CookieSharedPreferences 클래스**를 이용하여 기기 내부에 저장되어있는 **쿠키 값**을 서버로 보낼 데이터의 **헤더 영역에 추가**하는 기능을 정의하고 있습니다.
+
+```
+package net.devetude.www.retrofit2example.api.core.interceptor;
+
+import android.content.Context;
+
+import net.devetude.www.retrofit2example.api.core.preferences.CookieSharedPreferences;
+
+import java.io.IOException;
+import java.util.HashSet;
+
+import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
+
+/**
+ * AddCookiesInterceptor 클래스
+ *
+ * @author devetude
+ */
+public class AddCookiesInterceptor implements Interceptor {
+    // CookieSharedReferences 객체
+    private CookieSharedPreferences cookieSharedPreferences;
+
+    /**
+     * 생성자
+     *
+     * @param context
+     */
+    public AddCookiesInterceptor(Context context){
+        // CookieSharedReferences 객체 초기화
+        cookieSharedPreferences = CookieSharedPreferences.getInstanceOf(context);
+    }
+
+    @Override
+    public Response intercept(Interceptor.Chain chain) throws IOException {
+        // 가져온 chain으로 부터 빌더 객체를 생성
+        Request.Builder builder = chain.request().newBuilder();
+
+        // CookieSharedPreferences에 저장되어있는 쿠키 값을 가져옴
+        HashSet<String> cookies = (HashSet) cookieSharedPreferences.getHashSet(
+                CookieSharedPreferences.COOKIE_SHARED_PREFERENCES_KEY,
+                new HashSet<String>()
+        );
+
+        // 빌더 헤더 영역에 쿠키 값 추가
+        for (String cookie : cookies) {
+            builder.addHeader("Cookie", cookie);
+        }
+
+        // 체인에 빌더를 적용 및 반환
+        return chain.proceed(builder.build());
+    }
+}
+```
+
 ----------
+
+* 사용자 정의 소스코드 분석
+-------------
+
+서버의 api 구성 환경에 따라서 아래의 클래스들은 알맞게 변경하여 사용하시길 바랍니다.
+
+#### 1. APIUrl.java
+
+**APIUrl 클래스**는 api 서버의 다양한 **url**을 선언하는 기능을 정의하고 있습니다.
+
+```
+package net.devetude.www.retrofit2example.api.resource;
+
+/**
+ * APIUrl 클래스
+ *
+ * @author devetude
+ */
+public class APIUrl {
+    /**
+     * api 서버 url
+     *
+     * 주의) Retrofit2 부터 base url의 끝에 /(루트)를 꼭 기입해줘야 함
+     */
+    public static final String API_BASE_URL = "http://api.devetude.net/";
+
+    /**
+     * 실제 api 경로
+     *
+     * 주의) /sign/in.json (x), sign/in.json (o)
+     */
+    public static final String SIGN_IN_URL = "sign/in.json";
+    public static final String SIGN_UP_URL = "sign/up.json";
+    public static final String GET_WORD_TYPE_LIST = "word/type/list.json";
+}
+```
+
+#### 2. ResData.java
+
+**ResData 클래스**는 api 서버로 부터 오는 **response 데이터의 형식**을 선언하는 기능을 정의하고 있습니다.
+
+```
+package net.devetude.www.retrofit2example.api.response;
+
+/**
+ * ResData 클래스
+ *
+ * @author devetude
+ */
+public class ResData {
+    /**
+     * json 형식의 response 데이터를 받기 위한 멤버 변수
+     *
+     * 주의) 실제 api 서버에서 돌아오는 json 형식의 response 데이터의 필드명과 동일해야 함
+     */
+    public boolean res;
+    public String msg;
+    public Object data;
+}
+```
+
+#### 3. SignService.java
+
+**SignService 클래스**는 로그인 및 회원가입을 위한 다양한 **api 메소드** 및 **파라메터**를 정의하고 있습니다.
+
+```
+package net.devetude.www.retrofit2example.api.service;
+
+import android.content.Context;
+
+import net.devetude.www.retrofit2example.api.core.APIAdapter;
+import net.devetude.www.retrofit2example.api.resource.APIUrl;
+import net.devetude.www.retrofit2example.api.response.ResData;
+
+import retrofit2.Call;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
+
+/**
+ * SignService 클래스
+ *
+ * @author devetude
+ */
+public class SignService extends APIAdapter {
+    /**
+     * Retrofit 객체를 가져오는 메소드
+     *
+     * @param context
+     * @return
+     */
+    public static SignAPI getRetrofit(Context context) {
+        // 현재 서비스객체의 이름으로 Retrofit 객체를 초기화 하고 반환
+        return (SignAPI) retrofit(context, SignAPI.class);
+    }
+
+    // SignAPI 인터페이스
+    public interface SignAPI {
+        /**
+         * 회원가입 메소드
+         *
+         * @param email
+         * @param pw
+         * @param name
+         * @return
+         */
+        @FormUrlEncoded
+        @POST(APIUrl.SIGN_UP_URL)
+        Call<ResData> up(
+                @Field("email") String email,
+                @Field("pw") String pw,
+                @Field("name") String name
+        );
+
+        /**
+         * 로그인 메소드
+         *
+         * @param email
+         * @param pw
+         * @return
+         */
+        @FormUrlEncoded
+        @POST(APIUrl.SIGN_IN_URL)
+        Call<ResData> in(
+                @Field("email") String email,
+                @Field("pw") String pw
+        );
+    }
+}
+```
+
+----------
+
+* 실제 api 클래스의 적용
+-------------
