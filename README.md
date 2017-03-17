@@ -7,12 +7,11 @@ Retrofit2Example
 ----------
 
 
-#* 시작하기 전에...
+# 시작하기 전에...
 
 이 프로젝트에서는 아래 같은 **의존성 프로젝트**가 포함되어있습니다. 의존성 프로젝트별 자세한 설명은 해당 프로젝트의 레포지토리에서 직접확인해주세요.
 
 > **의존성 프로젝트 목록:**
-
 > 1. square/retrofit : https://github.com/square/retrofit
 > 2. square/okHttp : https://github.com/square/okhttp
 > 3. google/gson : https://github.com/google/gson
