@@ -360,7 +360,7 @@ public class APIUrl {
 }
 ```
 
-### 5.2. ResData.java
+## 5.2. ResData.java
 **ResData 클래스**는 api 서버로 부터 오는 **response 데이터의 형식**을 선언하는 기능을 정의하고 있습니다.
 
 ```java
@@ -383,7 +383,7 @@ public class ResData {
 }
 ```
 
-### 5.3. SignService.java
+## 5.3. SignService.java
 **SignService 클래스**는 로그인 및 회원가입을 위한 다양한 **api 메소드** 및 **파라메터**를 정의하고 있습니다.
 
 ```java
@@ -455,7 +455,7 @@ public class SignService extends APIAdapter {
 # 6. api 클래스의 적용
 위에서 만든 다양한 api 클래스를 **실제로 적용하는 방법**에 대해서 알아보겠습니다.
 
-### 6.1. MainActivity.java
+## 6.1. MainActivity.java
 로그인 api를 호출하여 로그인 과정을 마친 이후, 단어 api를 호출하여 단어 유형을 가져오는 간단한 세션 베이스를 아래와 같은 코드로 구현할 수 있습니다.
 
 ```java
@@ -543,17 +543,17 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
-### 6.2. Logcat 결과
+## 6.2. Logcat 결과
 Logcat으로 출력한 결과는 아래와 같습니다.
 
 <p align="center">
 	<img src="https://github.com/devetude/Retrofit2Example/blob/master/images/2.png?raw=true" width="700"/>
 </p>
 
-#  라이센스
+# 7. 라이센스
 본 프로젝트는 Apache 2.0 License를 따릅니다. http://www.apache.org/licenses/LICENSE-2.0
 
-# 문의사항
+# 8. 문의사항
 기타 문의사항이 있으실 경우 아래의 **문의 수단**으로 연락해주세요.
 > **문의 수단:**
 > - 메일 : **devetude@naver.com** 또는 **devetude@gmail.com**
