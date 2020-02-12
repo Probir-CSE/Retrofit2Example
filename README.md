@@ -1,13 +1,12 @@
-# 0. 시작하기 전에...
-이 프로젝트에서는 아래 같은 **의존성 프로젝트**가 포함되어있습니다. 의존성 프로젝트별 자세한 설명은 해당 프로젝트의 레포지토리에서 직접확인해주세요.
+# 0.Before starting ...
+This project includes the following dependency projects: Please refer to the project's repository for details on each dependency project.
 
-> **의존성 프로젝트 목록:**
+> ** List of dependent projects: **
 > 1. square/retrofit : https://github.com/square/retrofit
 > 2. square/okHttp : https://github.com/square/okhttp
 > 3. google/gson : https://github.com/google/gson
 
-# 1. Gradle을 이용한 의존성 프로젝트 추가
-아래와 같이 **build.gradle (Module: app)** 파일을 안드로이드 스튜디오에서 열어 **dependencies** 블록에 의존성 프로젝트를 추가해주세요.
+1. Adding a dependency project with Gradle 10 Open the ** build.gradle (Module: app) ** file in Android Studio and add the dependency project to the ** dependencies ** block as shown below.
 
 ```
 dependencies {
@@ -19,8 +18,7 @@ dependencies {
 }
 ```
 
-# 2. AndroidManifest에 네트워크 통신 퍼미션 추가
-이 프로젝트는 네트워크 통신 기능을 포함하고 있습니다. 따라서 아래와 같이 **AndroidManifest.xml** 파일에 **네트워크 통신 퍼미션**을 추가해주세요.
+# 2.Add network communication permission to AndroidManifest 22 The project includes network communication capabilities. Therefore, please add ** Network Communication Permissions ** to ** AndroidManifest.xml ** file as below.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -41,8 +39,7 @@ dependencies {
 </manifest>
 ```
 
-# 3. 프로젝트 패키지 및 클래스 생성
-프로젝트를 구성하기 전에 관리의 용의성을 고려하여 아래와 같이 **패키지** 및 **클래스**를 구성했습니다. (물론 자신의 상황에 맞게 변경하셔도 무관합니다.)
+# 3. Creating project packages and classes 43 Before organizing the project, we have organized the ** package ** and ** class ** as shown below for ease of management. (You can, of course, change it to your own situation.)
 
 <p align="center">
 	<img src="https://github.com/devetude/Retrofit2Example/blob/master/images/1.png?raw=true" width="400"/>
@@ -124,7 +121,7 @@ public class APIAdapter {
 
 
         /**
-         * 서비스객체의 이름으로 Retrofit 객체 생성 및 반환
+         * Create and return a Retrofit object with the name of a service object
          *
          * ex) retrofit.create(SignService.class);
          */
@@ -134,7 +131,7 @@ public class APIAdapter {
 ```
 
 ## 4.2. CookieSharedPreferences.java
-**CookieSharedPreferences 클래스**는 **SharedPreferences**를 이용하여 서버에서 오는 **세션 쿠키 값**을 기기 내부에 저장하고 가져오는 기능을 정의하고 있습니다.
+**The CookieSharedPreferences class ** defines the ability to store and retrieve ** session cookie values ​​** from the server using ** SharedPreferences ** inside the device.
 
 ```java
 package net.devetude.www.retrofit2example.api.core.preferences;
@@ -146,7 +143,7 @@ import android.content.SharedPreferences;
 import java.util.HashSet;
 
 /**
- * CookieSharedPreferences 클래스
+ * CookieSharedPreferences class
  *
  * @author devetude
  */
